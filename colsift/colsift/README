@@ -1,0 +1,184 @@
+
+      Demo code for detecting and matching COLOR SIFT features
+         --------------------------------------------------
+                    Jan-Mark Geusebroek (geusebroek@uva.nl)
+                    October 24, 2008
+
+
+This directory contains a compiled binary program for performing
+color invariant keypoint detection as well as sample code showing
+the use of the color SIFT features for image matching.
+
+See the web page at 
+  http://www.science.uva.nl/~mark/colorsift.html
+and
+  http://www.cs.ubc.ca/~lowe/keypoints/ 
+for references to the relevant papers describing this approach.
+
+If you found the provided software useful for your research,
+please cite the accompanying papers:
+
+For the color extension:
+G. J. Burghouts and J. M. Geusebroek. Performance evaluation of local colour invariants. Comput. Vision Image
+Understanding, vol. 113, pp. 48-62, 2009.
+
+For SIFT:
+D. G. Lowe. Distinctive image features from scale-invariant keypoints,
+International Journal of Computer Vision 60 (2) (2004) 91–110.
+
+
+Detecting color invariant keypoints
+-----------------------------------
+
+The program binary for keypoint extraction is named "colsift",
+and should run under most versions of Windows and Linux on
+Intel compatible processors.
+
+To detect keypoints and display them on the provided test images, use
+the command line option "-display" as follows:
+
+% colsift -in toys.ppm -display -out result.ppm
+
+This will write out a new image, result.ppm, with arrows overlayed
+indicating the locations, scales, and orientations of the key
+features.  You can inspect this image using the public domain program xv:
+
+% xv result.ppm
+
+or use any other tool that displays the common PPM image format.
+
+
+The various options for color descriptors
+-----------------------------------------
+
+The SIFT descriptor basically characterizes the local edge distribution
+around keypoints. Extension to color sounds straightforward: just consider
+color gradients, rather than intensity gradients, and put this into the
+Gaussian derivative framework. However, one can make many choices to define
+color gradients, the "physics based" approach being most promising.  For more
+details on the topic of color gradients, see the Burghouts and Geusebroek
+evaluation paper and references therein.
+
+In this software, I choose to provide the few useful choices (among many
+alternatives), which can be selected by providing the option "-colordesc"
+with one of the flags "chrom", "norm", "raw", "hsv", "grey".
+
+% colsift -in toys.ppm -colordesc {chrom|norm|raw|hsv|grey}
+
+The output of the "grey" descriptor is identical to David Lowe's original
+program. In this case, only intensity is used as the information content for
+the descriptor, and the output file will contain only 1 vector of 128 values
+per keypoint. In all other cases, the descriptor will contain 3 vectors of
+128 values, the first vector being exactly the original intensity based
+vector. One can also specify "-nocolordesc" at the command line to refer
+to this option.
+
+The default color descriptor is "chrom", that is the color descriptor chosen
+without specifying "-colordesc" or by explicitly specifying "-colordesc"
+without a flag. In this case, the first vector of 128 bytes in the
+descriptor carries all intensity related information, whereas the second and
+third vector contain the orthogonal chromatic information. Hence, intensity,
+shadow, and shading effects are present in the intensity vector, whereas the
+pure chromatic information is carried by the additional color vectors.
+This color descriptor is proven to work very effective under many
+circumstances, see the research paper:
+
+	G. J. Burghouts and J. M. Geusebroek. "Performance evaluation of local
+	colour invariants", Computer Vision and Image Understanding, vol. 113,
+	page 48-62, 2009.
+
+and see the PASCAL-VOC/TRECVID 2008 evaluations.
+
+Alternatively, one can choose for a normalized color descriptor, "norm", a
+"raw" opponent color descriptor, and a computationally intensive "hsv"
+descriptor.
+
+
+Color keypoint detection
+------------------------
+
+Besides the detection of intensity keypoints, the option "-colorkeys" allows
+one to detect additional color keypoints. In this case, keypoints are based
+on color DoG filters. This takes more computation time (about 3 times), but
+generates additional keypoints at locations where intensity contrast is low,
+but chromatic contrast is sufficiently high to detect a keypoint. For an
+illustration, scrutinize the following outputs:
+
+% colsift -in abn.ppm -display -out resabn.ppm
+% colsift -in abn.ppm -colorkeys -display -out resabncol.ppm
+
+
+ASCII file output for keypoints
+-------------------------------
+
+Without any command line arguments, the "colkeys" program will
+output the keypoints in a simple ASCII file format that
+is convenient to read by other programs and provides the data needed
+for matching keypoints:
+
+% colsift -in toys.ppm >toys.key
+
+The file format starts with 3 integers giving the total number of
+keypoints, the length of the descriptor vector for each keypoint
+(128), and the number of color channels contained (3).
+Then the location of each keypoint in the image is specified by
+4 floating point numbers giving subpixel row and column location,
+scale, and orientation (in radians from -PI to PI).  Obviously, these
+numbers are not invariant to viewpoint, but can be used in later
+stages of processing to check for geometric consistency among matches.
+Finally, the invariant descriptor vector for the keypoint is given as
+three lists of 128 integers in range [0,255].  Keypoints from a new image
+can be matched to those from previous images by simply looking for the
+descriptor vector with closest Euclidean distance among all vectors
+from previous images.
+
+
+Example of image matching using keypoints
+-----------------------------------------
+
+To demonstrate the value of the keypoints for image matching, this
+directory also contains some simple source code to read keypoints from
+2 images and calculate the best matches between the images.
+
+The matches are identified by finding the 2 nearest neighbors of each
+keypoint from the first image among those in the second image, and
+only accepting a match if the distance to the closest neighbor is less
+than 0.6 of that to the second closest neighbor.  The threshold of 0.6
+can be adjusted up to select more matches or down to select only the
+most reliable.  See David Lowe's research papers for the justification behind
+this approach.
+
+First, create keypoints for each test image:
+
+% colsift -in toys.ppm >toys.key
+% colsift -in abn.ppm >abn.key
+
+The match program requires command line arguments giving each of the
+two images keypoint files:
+
+% match -k1 toys.key -k2 abn.key
+% match -k1 toys.key -k2 toys.key
+
+The result is the number of correct matches between the images.
+Optionally, one can specify an output file:
+
+% match -k1 toys.key -k2 abn.key -out match.res
+
+which provides the best match from keypoints in file1 ("toys.key")
+to keypoints in file2 ("abn.key"), an indication if they did match,
+being '*' (yes) or '_' (no), and the Euclidean distance between the keypoints.
+
+You should be able to run this demo program to find matches between
+any pair of images in PPM format.  Of course, this matching approach
+is overly simple, and many more correct matches could be found by
+using a higher distance threshold and enforcing viewpoint consistency
+constraints between the set of resulting matches to eliminate
+outliers, as described in David Lowe's research papers.
+
+
+Licensing conditions
+--------------------
+
+This software is being made available for research purposes only.  See
+the file LICENSE in this directory for conditions of use.
+

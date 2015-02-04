@@ -1,0 +1,6 @@
+http://www.mathworks.com/matlabcentral/fileexchange/26184-em-algorithm-for-gaussian-mixture-model
+
+example: 
+load data; 
+label = emgm(x,3); 
+spread(x,label);
