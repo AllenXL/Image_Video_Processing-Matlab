@@ -1,0 +1,11 @@
+% 样本特征向量归一化
+DataCell = cell(1, DataTotal);
+for i = 1:DataTotal
+    DataCell{i} = OriginalData(i,:)';
+end
+
+DataCell=Scaling(DataCell);
+
+for i = 1:DataTotal
+    OriginalData(i,:) = DataCell{i}';
+end
