@@ -1,0 +1,114 @@
+
+<html>
+<header><title>SiftMotionFFmpeg.exe</title></header>
+<body>
+<font size=-2>
+<a NAME="top" HREF="#bottom">Sections:</a>
+<a HREF="#NAME">NAME</a>, 
+<a HREF="#DESCRIPTION">DESCRIPTION</a>, 
+<a HREF="#SET_UP">SET_UP</a>, 
+<a HREF="#HOW_TO_USE">HOW_TO_USE</a>, 
+<a HREF="#OPTIONS">OPTIONS</a>, 
+<a HREF="#SEEALSO">SEE ALSO</a>, 
+<a HREF="#BUGS">BUGS</a>, 
+<a HREF="#NOTES">NOTES</a>
+</font>
+<hr width="85%">
+<p>
+
+<a NAME="NAME" HREF="#top">
+<h3>NAME</h3></a>
+<b>SiftMotionFFmpeg.exe</b> 
+<P>
+
+<dd>
+
+</dd></dl>
+<a NAME="DESCRIPTION" HREF="#top">
+<h3><b>DESCRIPTION</b></h3></a>
+
+The <b>SiftMotionFFmpeg.exe</b> detects image features using MoSIFT algorithm. <br>
+This program runs in a windows 32bit system.
+<P>
+
+<a NAME="SET_UP" HREF="#top">
+<h3><b>SET_UP</b></h3></a>
+
+1. extract SiftMotionFFmpeg.zip <br>
+2. copy all dll files into your c:\windows\system32 folder<br>
+3. if your computer does not have Microsoft Visual C++ 2008 runtime installed, install vcredist.exe<br>
+
+<P>
+
+<a NAME="HOW_TO_USE" HREF="#top">
+<h3><b>HOW_TO_USE</b></h3></a>
+
+Make sure all the DLLs are in the current directory (or on the path). <br><p>
+From the windows command line run:<br>
+<p>
+SiftMotionFFmpeg.exe videoInputFileName featureOutputFileName [options]<br>
+
+<pre>
+    The first argument is the input file, the second the file with the feature point descriptors 
+    The MoSift output file contains 262 descriptions for each motion interest point detected. 
+    The first 6 parameters at the beginning of each point description indicate the X position, y position, frame number, scale, velocity in x-dimension and velocity in y dimension of the feature point 
+    The next 128 descriptors are the standard SIFT features 
+    The next 128 descriptors show the optical flow in SIFT style (but not rotation invariant!) 
+</pre>
+
+<P>
+
+<a NAME="OPTIONS" HREF="#top">
+<h3><b>OPTIONS</b></h3></a>
+
+use option -h to see usage or <br>
+<pre>
+	-s [int]  step size (default : 1)
+	this option sets up the number of frames to skip when finding MoSift features. 
+	
+	-f [int]: start frame   (default : 1)
+	-t [int]: end frame    (default : end of video)
+	these two options set up the range that program will run.
+	
+	-m [int]: minimum threshold for pixel movement    (default : 1)
+	-x [int]: maximum threshold for pixel movement    (default : 100)
+	if one of these options are used, additional file is generated (named as "videoInputFileName.startFrame-endFrame.stepsize") 
+	
+	the format of the file is :
+		Total frames : %d, from: %d, to: %d, stepsize: %d min_threshold: %d max_threshold: %d\n
+		frame#: x-pos y-pos dx dy distance, ....
+		...
+		
+	-c [int]: position of frame to calculate optical flow with the target frame
+	            (default : step size)
+	            comparing frame pos = current pos + [argument]
+	            this value should not be larger than step size	
+</pre>
+<P>
+
+<a NAME="SEEALSO" HREF="#top">
+<h3><b>SEE</b> <b>ALSO</b></h3></a>
+
+<a NAME="BUGS" HREF="#top">
+
+<h3><b>BUGS</b></h3></a>
+
+<a NAME="NOTES" HREF="#top">
+<h3><b>NOTES</b></h3></a>
+
+<P>
+<hr width="85%">
+<font size=-2>
+<a NAME="bottom" HREF="#top">Sections:</a>
+<a HREF="#NAME">NAME</a>, 
+<a HREF="#DESCRIPTION">DESCRIPTION</a>, 
+<a HREF="#SET_UP">SET_UP</a>, 
+<a HREF="#HOW_TO_USE">HOW_TO_USE</a>, 
+<a HREF="#OPTIONS">OPTIONS</a>, 
+<a HREF="#SEEALSO">SEE ALSO</a>, 
+<a HREF="#BUGS">BUGS</a>, 
+<a HREF="#NOTES">NOTES</a>
+</font>
+
+</body>
+</html>
